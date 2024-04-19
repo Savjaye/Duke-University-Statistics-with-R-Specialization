@@ -18,10 +18,6 @@ library(dplyr)
 
 ### Load data
 
-Make sure your data and R Markdown files are in the same directory. When loaded
-your data file will be called `brfss2013`. Delete this note when before you submit 
-your work. 
-
 ```{r load-data}
 load("brfss2013.RData")
 ```
@@ -31,17 +27,26 @@ load("brfss2013.RData")
 * * *
 
 ## Part 1: Data
+The BRFSS data is collected through telephone interviews that take place between two sample: land line and cell phone calls. Phone numbers are collected from the CDC and randomly selected. Becuase of the data collects method (phone calls) and the randomization in sample selection, the data and subsequent conclusion in this analysis can be said to be generalized to the general population of phone owners. However, seeing as the data collected in the BRFSS is observational, only correlations can be infered. Nothing causitory can be draw. 
 
 
 * * *
 
 ## Part 2: Research questions
 
-**Research quesion 1:**
+**Research question 1:**
+How does the mental health of those who are married compare to those who are unmarried? Marriage is often idealized as a chance at "happily ever after" and if this mainstream assumption holds true, we would expect a lower number of poor mental health days and less depression diagnosis among married populations.
 
-**Research quesion 2:**
+independent variable: marital status (MARITAL)
+dependent variables: depression diagnosis (ADDEPEV2) and number of days per year with poor mental health (MENTHLTH)
 
-**Research quesion 3:**
+**Research question 2:**
+Which states have the highest instances of skin cancer? Skin cancer is more likely to occur when we are exposed to UV radiation from the sun and improperly protected from it. With this in mind we may expect states with the highes UV indexes (Hawaii, Arizona, California, Florida, and Nevada) to have the highest instances of skin cancer. However, if this does not occur, we can infer that proper protection (sunscreen habits) may play a more important role than exposure. 
+
+independent variable: state of residence (_STATE)
+dependent variable: skin cancer rates (CHCSCNCR)
+
+**Research question 3:**
 
 
 * * *
@@ -52,7 +57,22 @@ NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk"
 button (green button with orange arrow) above. Make sure that your code is visible
 in the project you submit. Delete this note when before you submit your work.
 
-**Research quesion 1:**
+**Research question 1:**
+
+```{r Question 1: Numerical Summary}
+married_dep_df <- brfss2013 %>%
+  filter(!is.na(marital), !is.na(addepev2)) %>%
+  group_by(marital, addepev2) %>%
+  summarise(count = n())
+```
+```{r Question 1: Visual Summary}
+levels(brfss2013$marital) <- gsub(" ", "\n", levels(married_dep_df$marital))
+ggplot(subset(brfss2013, !is.na(marital) & !is.na(addepev2)), aes(x = marital, fill = addepev2)) + geom_bar()
+
+```
+
+
+**Research question 2:**
 
 ```{r}
 
@@ -60,14 +80,6 @@ in the project you submit. Delete this note when before you submit your work.
 
 
 
-**Research quesion 2:**
-
-```{r}
-
-```
-
-
-
-**Research quesion 3:**
+**Research question 3:**
 
 ```{r}
