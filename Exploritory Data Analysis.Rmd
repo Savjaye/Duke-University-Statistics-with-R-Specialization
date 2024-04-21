@@ -35,7 +35,7 @@ The BRFSS data is collected through telephone interviews that take place between
 ## Part 2: Research questions
 
 **Research question 1:**
-How does the mental health of those who are married compare to those who are unmarried? Marriage is often idealized as a chance at "happily ever after" and if this mainstream assumption holds true, we would expect a lower number of poor mental health days and less depression diagnosis among married populations.
+How does the mental health of those who are married compare to those who are unmarried? Marriage is often idealized as a chance at "happily ever after" and if this mainstream assumption holds true, we would expect a lower number of depression diagnosis among married populations.
 
 independent variable: marital status (MARITAL)
 dependent variables: depression diagnosis (ADDEPEV2) and number of days per year with poor mental health (MENTHLTH)
@@ -47,7 +47,7 @@ independent variable: state of residence (_STATE)
 dependent variable: skin cancer rates (CHCSCNCR)
 
 **Research question 3:**
-
+How do exercise habits change as hours per week change? Frequent exercise is essential for maintaining health across a lifetime, however, many American's find it difficult to keep a continuous exerciser routine. Often, this is attributed to laziness ,however, for many American's, work takes up a large part of their lives and energy expenditure. This part of the analysis aims to guage how hours worked impact hours of excersie. 
 
 * * *
 
@@ -62,30 +62,58 @@ in the project you submit. Delete this note when before you submit your work.
 ```{r Question 1: Numerical Summary}
 married_count_dep_df <- brfss2013 %>%
   filter(!is.na(marital), !is.na(addepev2)) %>%
-  group_by(marital, addepev2) %>%
+  group_by(marital_status = marital, depression_diagnosis = addepev2) %>%
   summarise(count = n())
 
 marries_perc_dep_df <- brfss2013 %>% 
   filter(!is.na(marital), !is.na(addepev2)) %>%
   group_by(marital) %>%
   summarise(percent_with_depression_diagnosis = (sum(addepev2 == "Yes") / n()))
+
+sixty_five_perc_by_age_df <- brfss2013 %>% 
+  filter(!is.na(marital), !is.na(X_ageg5yr)) %>%
+  group_by(marital == "Widowed") %>% 
+  summarise(sixty_five_or_older = (sum(X_ageg5yr == "Age 65 to 69", X_ageg5yr == "Age 70 to 74 
+", X_ageg5yr == "Age 75 to 79", X_ageg5yr == "Age 80 or older" )/ n()))
 ```
+The above code first creates two data frames: The first one shows the counts for individuals with a depression diagnosis per martial status and the second one shows the percent of individuals with a depression diagnosis by marital status. From here we are able to see that the groups with the highest rates of depression diagnoses are individuals who are either separated or divorced. We can see those with the lowest rate of depression diagnoses are those who are either married or widowed. I found it a little shocking that those who are widowed have the second lowest rate of depression diagnosis. What could be happening here? If married individuals have lower rates of depression, couldn't we expect those with a dead spouse to be on the opposite end of the spectrum? 
+
+This made me think of Laura Carstensen's research on older people, finding that these populations are among one of the happiest. Could this be a factor? The third data frame finds that, of those who are widowed, 66.9% of them are 65+. The lower rates of depression are likely a reflection of increased positive affect that occurs in older adults. 
+
+
 ```{r Question 1: Visual Summary}
-levels(brfss2013$marital) <- gsub(" ", "\n", levels(married_dep_df$marital))
+levels(brfss2013$marital) <- gsub(" ", "\n", levels(brfss2013$marital))
 ggplot(subset(brfss2013, !is.na(marital) & !is.na(addepev2)), aes(x = marital, fill = addepev2)) + geom_bar()
 
+levels(marries_perc_dep_df$marital) <- gsub(" ", "\n", levels(marries_perc_dep_df$marital))
 ggplot(marries_perc_dep_df, aes(x = marital, fill = percent_with_depression_diagnosis)) +geom_bar()
 
 ```
-
+Graph #1 above shows the number of individuals with and without a depression diagnosis for each marital status. This graph helps intuit the rate of depression for each group. However, because the group sizes vary greatly, it can still be difficult to understand the exact rates. Graph #2 better visualizes the rate of depression per each marital group, with lighter colors indicatin high rates. Here we can see separated and divorced population have the highest rates of depression and married and widowed population have the lowest.
 
 **Research question 2:**
 
 ```{r}
+skin_cancer_rates_df <- brfss2013 %>%
+  filter(!is.na(X_state), !is.na(chcscncr)) %>%
+  group_by(X_state) %>%
+  summarise(rate_of_skn_cnr = (sum(chcscncr == "Yes")/ n())) %>% 
+  arrange(desc(rate_of_skn_cnr))
 
+cant_see_dr_per_df <- brfss2013 %>%
+  filter(!is.na(X_state), !is.na(checkup1)) %>%
+  group_by(X_state) %>%
+  summarise(cant_see_dr = (sum(checkup1 == "Within past 5 years", checkup1 == "5 or more years ago")/ n())) %>%
+  arrange(desc(cant_see_dr))
 ```
 
+This first data frame above find the states that have the highest instances of skin cancer. As expected, Florida and Arizona have the highest rates. California, Puerto Rico, and Guam are lower on the rankings which is surprising considering all three places have high UV indexes. One possible explanation is access to health care in these regions may be low. To investigate this, the second data frame looks at the rate of individuals within each region who have been unable to see a doctor within the last 2 year, due to cost. This data frame shows that lack of access may be a factor for people from California (9.4% unable to see a doctor) and Guam (7.8%), implying that there may individuals in those areas with skin cancer but no ability to recieve a diagnosis. 
 
+
+```{r Question 2: Visual Summary}
+ggplot(skin_cancer_rates_df, aes(x = X_state, y = rate_of_skn_cnr)) + geom_col() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
 
 **Research question 3:**
 
