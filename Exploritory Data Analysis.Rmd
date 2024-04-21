@@ -60,14 +60,21 @@ in the project you submit. Delete this note when before you submit your work.
 **Research question 1:**
 
 ```{r Question 1: Numerical Summary}
-married_dep_df <- brfss2013 %>%
+married_count_dep_df <- brfss2013 %>%
   filter(!is.na(marital), !is.na(addepev2)) %>%
   group_by(marital, addepev2) %>%
   summarise(count = n())
+
+marries_perc_dep_df <- brfss2013 %>% 
+  filter(!is.na(marital), !is.na(addepev2)) %>%
+  group_by(marital) %>%
+  summarise(percent_with_depression_diagnosis = (sum(addepev2 == "Yes") / n()))
 ```
 ```{r Question 1: Visual Summary}
 levels(brfss2013$marital) <- gsub(" ", "\n", levels(married_dep_df$marital))
 ggplot(subset(brfss2013, !is.na(marital) & !is.na(addepev2)), aes(x = marital, fill = addepev2)) + geom_bar()
+
+ggplot(marries_perc_dep_df, aes(x = marital, fill = percent_with_depression_diagnosis)) +geom_bar()
 
 ```
 
