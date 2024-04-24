@@ -47,8 +47,10 @@ independent variable: state of residence (_STATE)
 dependent variable: skin cancer rates (CHCSCNCR)
 
 **Research question 3:**
-How do exercise habits change as hours per week change? Frequent exercise is essential for maintaining health across a lifetime, however, many American's find it difficult to keep a continuous exerciser routine. Often, this is attributed to laziness ,however, for many American's, work takes up a large part of their lives and energy expenditure. This part of the analysis aims to guage how hours worked impact hours of excersie. 
+How do exercise habits change as hours per week working change? Frequent exercise is essential for maintaining health across a lifetime, however, many American's find it difficult to keep a continuous exerciser routine. Often, this is attributed to laziness ,however, for many American's, work takes up a large part of their lives and energy expenditure. This part of the analysis aims to guage how hours worked impact hours of excersise 
 
+independent variable: hours per week worked (SCNTWRK1)
+dependent variable: Excersie outside of work (_TOTINDA)
 * * *
 
 ## Part 3: Exploratory data analysis
@@ -93,7 +95,7 @@ Graph #1 above shows the number of individuals with and without a depression dia
 
 **Research question 2:**
 
-```{r}
+```{r Question 2: Numerical Summary}
 skin_cancer_rates_df <- brfss2013 %>%
   filter(!is.na(X_state), !is.na(chcscncr)) %>%
   group_by(X_state) %>%
@@ -117,4 +119,26 @@ ggplot(skin_cancer_rates_df, aes(x = X_state, y = rate_of_skn_cnr)) + geom_col()
 
 **Research question 3:**
 
-```{r}
+```{r Question 3: Numerical Summary}
+
+
+hours_worked_v_excersie_df <- brfss2013 %>% 
+  filter(!is.na(scntwrk1), !is.na(X_totinda), !(scntwrk1 == 97)) %>%
+  mutate(scntwrk1 = ifelse(scntwrk1 == 98, 0, scntwrk1), hours_worked_range = cut(scntwrk1, c(-Inf, 0, 10, 20, 30, 40, Inf), labels = c("0","1-10", "11-20", "21-30", "31-40", "40+"))) %>%
+  group_by(hours_worked_range) %>%
+  summarise(percent_work_out = (sum(X_totinda == "Had physical activity or exercise")  / n()))
+```
+
+The above code block creates a data frame that organizes cases into groups based on hours worked per week and calculates the percentage of members from each group that worked out within the last 30 days. Each case falls into one of the following groups: "0","1-10", "11-20", "21-30", "31-40", "40+". This data frame was achieved by removing 'NA's from the column capturing the hours worked per week and the column capturing if the case excersied within the last 30 days. Next, a column is added to the data frame to indicate which of the groups each case falls in. Finally, the data is grouped accordingly and the percentage of those who worked out in each group is calculated. 
+
+
+```{r Question 3: Visual Summary}
+
+ggplot(hours_worked_v_excersie_df, aes(x = hours_worked_range, y = percent_work_out)) + geom_col()
+
+
+```
+
+
+The above bar graph shows what percentage of individuals within each group had exercised with in the last 30 days. The group with the most individuals working out at least one within the last 30 days was the group that worked 40+ hours a week. The group who had the least number of individuals working out was 0 hours worked per week group. This runs counter to my intuition and I would like to do further analysis with data that shows the average amount of hours spent exercising by each group as opposed to tallying how many people worked out at least once with in the last 30 days. 
+
